@@ -7,4 +7,5 @@ target 'ImagePickerDemo' do
 	pod 'ImagePicker', path: '../../'
 	pod 'Lightbox'
 	pod 'Hue'
+    pod 'CocoaLumberjack/Swift'
 end

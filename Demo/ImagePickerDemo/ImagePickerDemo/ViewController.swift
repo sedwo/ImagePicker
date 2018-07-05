@@ -1,6 +1,10 @@
 import UIKit
 import ImagePicker
 import Lightbox
+import CocoaLumberjack
+import CoreLocation
+
+
 
 class ViewController: UIViewController, ImagePickerDelegate {
 
@@ -30,17 +34,17 @@ class ViewController: UIViewController, ImagePickerDelegate {
     let button = UIButton()
     button.setTitle("Show ImagePicker", for: .normal)
     button.setTitleColor(UIColor.black, for: .normal)
-    button.addTarget(self, action: #selector(buttonTouched(button:)), for: .touchUpInside)
+    button.addTarget(self, action: #selector(showImagePickerButton(button:)), for: .touchUpInside)
 
     return button
   }
 
-  @objc func buttonTouched(button: UIButton) {
-    var config = Configuration()
+
+  @objc func showImagePickerButton(button: UIButton) {
+    let config = Configuration()
     config.doneButtonTitle = "Finish"
     config.noImagesTitle = "Sorry! There are no images here!"
-    config.recordLocation = false
-    config.allowVideoSelection = true
+    config.showsImageCountLabel = false
 
     let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
@@ -48,14 +52,51 @@ class ViewController: UIViewController, ImagePickerDelegate {
     present(imagePicker, animated: true, completion: nil)
   }
 
+
+
   // MARK: - ImagePickerDelegate
 
   func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
+    DDLogInfo("")
+
     imagePicker.dismiss(animated: true, completion: nil)
   }
 
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
+
+
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+    DDLogVerbose("")
+
     guard images.count > 0 else { return }
+    DDLogInfo("images.count = \(images.count)")
+
+    let lightboxImages = images.map {
+      return LightboxImage(image: UIImage(data: $0.imageData)!)
+    }
+
+    let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
+    imagePicker.present(lightbox, animated: true, completion: nil)
+
+
+  }
+
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+    DDLogVerbose("")
+    imagePicker.dismiss(animated: true, completion: nil)
+  }
+
+
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
+    DDLogInfo("")
+
+    imagePicker.dismiss(animated: true, completion: nil)
+  }
+
+
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
+    DDLogInfo("")
+    guard images.count > 0 else { return }
+    DDLogInfo("images.count = \(images.count)")
 
     let lightboxImages = images.map {
       return LightboxImage(image: $0)
@@ -65,7 +106,8 @@ class ViewController: UIViewController, ImagePickerDelegate {
     imagePicker.present(lightbox, animated: true, completion: nil)
   }
 
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
-    imagePicker.dismiss(animated: true, completion: nil)
-  }
+
+
+
+
 }

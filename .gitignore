@@ -28,3 +28,4 @@ DerivedData
 
 # CocoaPods
 Pods
+/Demo/ImagePickerDemo/Podfile.lock

@@ -10,6 +10,7 @@
 		29D699DF1B70ABFC0021FA73 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D699DE1B70ABFC0021FA73 /* AppDelegate.swift */; };
 		29D699E61B70ABFC0021FA73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29D699E51B70ABFC0021FA73 /* Images.xcassets */; };
 		29D699E91B70ABFC0021FA73 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 29D699E71B70ABFC0021FA73 /* LaunchScreen.xib */; };
+		75FD959C20EE69D200DCD4B7 /* MyCustomFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FD959B20EE69D200DCD4B7 /* MyCustomFormatter.swift */; };
 		A23836048FD18F274FB629F2 /* Pods_ImagePickerDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E0B31E77EFE064C4E63D017 /* Pods_ImagePickerDemo.framework */; };
 		D20AA8A51D5330100085FF5B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20AA8A41D5330100085FF5B /* ViewController.swift */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,7 @@
 		2A8853E2BE3B43C6DC7CF614 /* Pods-ImagePickerDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImagePickerDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ImagePickerDemo/Pods-ImagePickerDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		3E0B31E77EFE064C4E63D017 /* Pods_ImagePickerDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImagePickerDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		733A7AD0105A657A80502E72 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		75FD959B20EE69D200DCD4B7 /* MyCustomFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyCustomFormatter.swift; sourceTree = "<group>"; };
 		7F1C1FC700491641CD7DB2C1 /* Pods-ImagePickerDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImagePickerDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-ImagePickerDemo/Pods-ImagePickerDemo.release.xcconfig"; sourceTree = "<group>"; };
 		D20AA8A41D5330100085FF5B /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -63,10 +65,9 @@
 			isa = PBXGroup;
 			children = (
 				29D699DE1B70ABFC0021FA73 /* AppDelegate.swift */,
-				29D699E51B70ABFC0021FA73 /* Images.xcassets */,
-				29D699E71B70ABFC0021FA73 /* LaunchScreen.xib */,
-				29D699DC1B70ABFC0021FA73 /* Supporting Files */,
 				D20AA8A41D5330100085FF5B /* ViewController.swift */,
+				29D699DC1B70ABFC0021FA73 /* Supporting Files */,
+				75FD959B20EE69D200DCD4B7 /* MyCustomFormatter.swift */,
 			);
 			path = ImagePickerDemo;
 			sourceTree = "<group>";
@@ -74,6 +75,8 @@
 		29D699DC1B70ABFC0021FA73 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				29D699E51B70ABFC0021FA73 /* Images.xcassets */,
+				29D699E71B70ABFC0021FA73 /* LaunchScreen.xib */,
 				29D699DD1B70ABFC0021FA73 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -109,7 +112,6 @@
 				29D699D61B70ABFC0021FA73 /* Frameworks */,
 				29D699D71B70ABFC0021FA73 /* Resources */,
 				F3EF51BCE509121FBC00640E /* [CP] Embed Pods Frameworks */,
-				EEE9A1733584FC13190615E2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -132,6 +134,7 @@
 				TargetAttributes = {
 					29D699D81B70ABFC0021FA73 = {
 						CreatedOnToolsVersion = 6.4;
+						DevelopmentTeam = LAQ2U7RQDV;
 						LastSwiftMigration = 0800;
 					};
 				};
@@ -185,21 +188,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EEE9A1733584FC13190615E2 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ImagePickerDemo/Pods-ImagePickerDemo-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F3EF51BCE509121FBC00640E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -208,6 +196,7 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-ImagePickerDemo/Pods-ImagePickerDemo-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Cache/Cache.framework",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/Hue/Hue.framework",
 				"${BUILT_PRODUCTS_DIR}/ImagePicker/ImagePicker.framework",
 				"${BUILT_PRODUCTS_DIR}/Imaginary/Imaginary.framework",
@@ -217,6 +206,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Cache.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Hue.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ImagePicker.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Imaginary.framework",
@@ -235,6 +225,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75FD959C20EE69D200DCD4B7 /* MyCustomFormatter.swift in Sources */,
 				D20AA8A51D5330100085FF5B /* ViewController.swift in Sources */,
 				29D699DF1B70ABFC0021FA73 /* AppDelegate.swift in Sources */,
 			);
@@ -299,7 +290,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -347,7 +338,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -365,9 +356,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = LAQ2U7RQDV;
 				INFOPLIST_FILE = ImagePickerDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePickerDemo2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -383,9 +374,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = LAQ2U7RQDV;
 				INFOPLIST_FILE = ImagePickerDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePickerDemo2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
