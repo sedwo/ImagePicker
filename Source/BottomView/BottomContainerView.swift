@@ -98,12 +98,10 @@ open class BottomContainerView: UIView {
     } else {
       delegate?.doneButtonDidPress()
     }
-    self.isUserInteractionEnabled = false
   }
 
   @objc func handleTapGestureRecognizer(_ recognizer: UITapGestureRecognizer) {
     delegate?.imageStackViewDidPress()
-    self.isUserInteractionEnabled = false
   }
 
   fileprivate func animateImageView(_ imageView: UIImageView) {
