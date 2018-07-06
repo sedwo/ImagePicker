@@ -3,6 +3,7 @@ import ImagePicker
 import Lightbox
 import CocoaLumberjack
 import CoreLocation
+import AVFoundation
 
 
 
@@ -48,35 +49,24 @@ class ViewController: UIViewController, ImagePickerDelegate {
 
     let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
+    ImagePickerController.photoQuality = AVCaptureSession.Preset.photo  // full resolution photo quality output
 
     present(imagePicker, animated: true, completion: nil)
   }
 
 
 
-  // MARK: - ImagePickerDelegate
+  // MARK: - ImagePickerDelegate(s)
 
-  func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-    DDLogInfo("")
+  // Called only if set value to ImagePickerController.photoQuality
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+    DDLogVerbose("")
 
-    imagePicker.dismiss(animated: true, completion: nil)
-  }
-
-
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
-    DDLogInfo("")
-
-    imagePicker.dismiss(animated: true, completion: nil)
-  }
-
-
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
-    DDLogInfo("")
     guard images.count > 0 else { return }
     DDLogInfo("images.count = \(images.count)")
 
     let lightboxImages = images.map {
-      return LightboxImage(image: $0)
+      return LightboxImage(image: UIImage(data: $0.imageData)!)
     }
 
     let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
@@ -84,7 +74,18 @@ class ViewController: UIViewController, ImagePickerDelegate {
   }
 
 
+  // Called only if set value to ImagePickerController.photoQuality
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+    DDLogVerbose("")
+    imagePicker.dismiss(animated: true, completion: nil)
+  }
 
+
+  func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
+    DDLogInfo("")
+
+    imagePicker.dismiss(animated: true, completion: nil)
+  }
 
 
 }

@@ -5,12 +5,23 @@ import Photos
 
 
 public protocol ImagePickerDelegate: NSObjectProtocol {
-
   func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
   func cancelButtonDidPress(_ imagePicker: ImagePickerController)
+
+  /// Called only if set value to ImagePickerController.photoQuality
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
 }
 
+public extension ImagePickerDelegate {
+  // defaults.
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) { print("\(#function) default")}
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) { print("\(#function) default")}
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)]) { print("\(#function) default")}
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)]) { print("\(#function) default")}
+  func cancelButtonDidPress(_ imagePicker: ImagePickerController) { print("\(#function) default")}
+}
 
 
 open class ImagePickerController: UIViewController {
@@ -72,7 +83,7 @@ open class ImagePickerController: UIViewController {
   var volume = AVAudioSession.sharedInstance().outputVolume
 
   open weak var delegate: ImagePickerDelegate?
-  open static var photoQuality: AVCaptureSession.Preset? = .photo
+  open static var photoQuality: AVCaptureSession.Preset?
   open var stack = ImageStack()
   open var imageLimit = 0
   open var preferredImageSize: CGSize?
@@ -373,6 +384,7 @@ open class ImagePickerController: UIViewController {
   }
 }
 
+
 // MARK: - Action methods
 
 extension ImagePickerController: BottomContainerViewDelegate {
@@ -382,21 +394,42 @@ extension ImagePickerController: BottomContainerViewDelegate {
   }
 
   func doneButtonDidPress() {
-    var images: [UIImage]
-    if let preferredImageSize = preferredImageSize {
-        images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
+    if ImagePickerController.photoQuality != nil {
+        AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
+            (images: [(imageData: Data,location: CLLocation?)]) in
+
+            self?.clearTempData()
+            if let self_ = self {
+                self?.delegate?.doneButtonDidPress(self_, images: images)
+            }
+        })
     } else {
-        images = AssetManager.resolveAssets(stack.assets)
+        var images: [UIImage]
+        if let preferredImageSize = preferredImageSize {
+            images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
+        } else {
+            images = AssetManager.resolveAssets(stack.assets)
+        }
+        clearTempData()
+        delegate?.doneButtonDidPress(self, images: images)
     }
-    clearTempData()
-    delegate?.doneButtonDidPress(self, images: images)
-    }
+  }
 
   func cancelButtonDidPress() {
     delegate?.cancelButtonDidPress(self)
   }
 
   func imageStackViewDidPress() {
+
+    if ImagePickerController.photoQuality != nil {
+      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
+        (images: [(imageData: Data,location: CLLocation?)]) in
+        self?.clearTempData()
+        if let self_ = self {
+          self?.delegate?.wrapperDidPress(self_, images: images)
+        }
+      })
+    } else {
     var images: [UIImage]
     if let preferredImageSize = preferredImageSize {
         images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
@@ -405,6 +438,7 @@ extension ImagePickerController: BottomContainerViewDelegate {
     }
     clearTempData()
     delegate?.wrapperDidPress(self, images: images)
+    }
   }
 
   private func clearTempData() {
