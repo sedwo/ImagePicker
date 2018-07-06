@@ -172,16 +172,55 @@ class CameraMan {
     }
   }
 
-  // combine exif dictionaries
-  func addGPSToEXIF( old :inout [String: Any], new:[String: Any]) -> [String: Any] {
-    old[kCGImagePropertyGPSDictionary as String] = new
-    return old
-  }
 
+  private func getGPSDictionary(location: CLLocation) -> [String: Any] {
+    var gpsDict = [String: Any]()
 
-  private func getGPSDictionary(location: CLLocation) -> [String: Double] {
-    let dictionary = [kCGImagePropertyGPSLatitude as String :location.coordinate.latitude, kCGImagePropertyGPSLongitude as String :location.coordinate.longitude]
-    return dictionary
+    var formatter = DateFormatter()
+    formatter.timeZone = TimeZone(abbreviation: "UTC")
+
+    formatter.dateFormat = "HH:mm:ss.SS"
+    gpsDict[kCGImagePropertyGPSTimeStamp as String] = formatter.string(from: location.timestamp)
+    formatter.dateFormat = "yyyy:MM:dd"
+    gpsDict[kCGImagePropertyGPSDateStamp as String] = formatter.string(from: location.timestamp)
+
+    gpsDict[kCGImagePropertyGPSVersion as String] = "2.2.0.0"
+
+    var latitude = location.coordinate.latitude
+    latitude = (latitude < 0) ? -latitude : latitude        // negative values not allowed.
+    gpsDict[kCGImagePropertyGPSLatitude as String] = latitude
+    gpsDict[kCGImagePropertyGPSLatitudeRef as String] = location.coordinate.latitude > 0 ? "N" : "S"
+
+    var longitude = location.coordinate.longitude
+    longitude = (longitude < 0) ? -longitude : longitude    // negative values not allowed.
+    gpsDict[kCGImagePropertyGPSLongitude as String] = longitude
+    gpsDict[kCGImagePropertyGPSLongitudeRef as String] = location.coordinate.longitude > 0 ? "E" : "W"
+
+    var altitude = location.altitude
+
+    if !altitude.isNaN {
+        gpsDict[kCGImagePropertyGPSAltitudeRef as String] = Int(location.altitude < 0.0 ? 1 : 0)
+
+        if altitude < 0 {
+            altitude = -altitude;
+        }
+
+        gpsDict[kCGImagePropertyGPSAltitude as String] = altitude
+    }
+
+    if location.speed >= 0 {
+        gpsDict[kCGImagePropertyGPSSpeed as String] = location.speed*3.6
+        gpsDict[kCGImagePropertyGPSSpeedRef as String] = "K"
+    }
+
+    if location.course >= 0 {
+        gpsDict[kCGImagePropertyGPSTrackRef as String] = "T"
+        gpsDict[kCGImagePropertyGPSTrack as String] = location.course
+    }
+
+    gpsDict[kCGImagePropertyGPSHPositioningError as String] = location.horizontalAccuracy
+
+    return gpsDict
   }
 
 
@@ -189,14 +228,17 @@ class CameraMan {
   private func attachEXIFtoImage(image: Data, EXIF: [String: Any]) -> Data? {
 
     if let imageDataProvider = CGDataProvider(data: image as CFData),
-      let imageRef = CGImage(jpegDataProviderSource: imageDataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent),
-      let newImageData = CFDataCreateMutable(nil, 0),
-      let type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, "image/jpeg" as CFString, kUTTypeImage),
-      let destination = CGImageDestinationCreateWithData(newImageData, type.takeRetainedValue(), 1, nil) {
-      CGImageDestinationAddImage(destination, imageRef, EXIF as CFDictionary)
-      CGImageDestinationFinalize(destination)
-      return newImageData as Data
+       let imageRef = CGImage(jpegDataProviderSource: imageDataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent),
+       let newImageData = CFDataCreateMutable(nil, 0),
+       let type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, "image/jpeg" as CFString, kUTTypeImage),
+       let destination = CGImageDestinationCreateWithData(newImageData, type.takeRetainedValue(), 1, nil) {
+
+       CGImageDestinationAddImage(destination, imageRef, EXIF as CFDictionary)
+       CGImageDestinationFinalize(destination)
+
+       return newImageData as Data
     }
+
     return nil
   }
 
@@ -204,14 +246,22 @@ class CameraMan {
     PHPhotoLibrary.shared().performChanges({
 
       if let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
-        var currentProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] {
+         var currentProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] {
+
         if let location = location {
           currentProperties[kCGImagePropertyGPSDictionary as String] = self.getGPSDictionary(location: location)
         }
+
+        // Embed a string inside EXIF header.  :)
+        // TODO: expand functionality for user supplied string.
+        if var exif = currentProperties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
+            exif[kCGImagePropertyExifUserComment as String] = "hyper imagePicker"
+            currentProperties[kCGImagePropertyExifDictionary as String] = exif
+        }
+
         if let attached = self.attachEXIFtoImage(image: imageData, EXIF: currentProperties) {
           do {
-
-            let fileName = NSUUID().uuidString + "imagePicker.jpg"
+            let fileName = NSUUID().uuidString + "_imagePicker.jpg"
             if let fullURL = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), fileName]) {
               try attached.write(to: fullURL)
               let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fullURL)

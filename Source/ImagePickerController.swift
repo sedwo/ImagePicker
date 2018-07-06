@@ -380,7 +380,7 @@ extension ImagePickerController: BottomContainerViewDelegate {
   func doneButtonDidPress() {
     if ImagePickerController.photoQuality != nil {
       AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data,location: CLLocation?)]) in
+        (images: [(imageData: Data, location: CLLocation?)]) in
 
         self?.clearTempData()
         if let self_ = self {
@@ -407,7 +407,7 @@ extension ImagePickerController: BottomContainerViewDelegate {
 
     if ImagePickerController.photoQuality != nil {
       AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data,location: CLLocation?)]) in
+        (images: [(imageData: Data, location: CLLocation?)]) in
         self?.clearTempData()
         if let self_ = self {
           self?.delegate?.wrapperDidPress(self_, images: images)
