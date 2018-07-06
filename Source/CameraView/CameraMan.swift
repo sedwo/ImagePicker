@@ -256,10 +256,9 @@ class CameraMan {
           currentProperties[kCGImagePropertyGPSDictionary as String] = self.getGPSDictionary(location: location)
         }
 
-        // Embed a string inside EXIF header.  :)
-        // TODO: expand functionality for user supplied string.
+        // Embed a custom user string inside EXIF header.
         if var exif = currentProperties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
-            exif[kCGImagePropertyExifUserComment as String] = "hyper imagePicker"
+            exif[kCGImagePropertyExifUserComment as String] = self.configuration.exifUserComment
             currentProperties[kCGImagePropertyExifDictionary as String] = exif
         }
 
