@@ -54,8 +54,6 @@ open class ImagePickerController: UIViewController {
   lazy var cameraController: CameraView = { [unowned self] in
     let controller = CameraView(configuration: self.configuration)
     controller.delegate = self
-    controller.startOnFrontCamera = self.startOnFrontCamera
-
     return controller
     }()
 

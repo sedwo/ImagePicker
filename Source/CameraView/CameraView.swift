@@ -90,13 +90,12 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     return gesture
     }()
 
-  let cameraMan = CameraMan()
+  let cameraMan: CameraMan!
 
   var previewLayer: AVCaptureVideoPreviewLayer?
   weak var delegate: CameraViewDelegate?
   var animationTimer: Timer?
   var locationManager: LocationManager?
-  var startOnFrontCamera: Bool = false
 
   private let minimumZoomFactor: CGFloat = 1.0
   private let maximumZoomFactor: CGFloat = 3.0
@@ -104,10 +103,10 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
   private var currentZoomFactor: CGFloat = 1.0
   private var previousZoomFactor: CGFloat = 1.0
 
-  public init(configuration: Configuration? = nil) {
-    if let configuration = configuration {
-      self.configuration = configuration
-    }
+  public init(configuration: Configuration) {
+    self.configuration = configuration
+    self.cameraMan = CameraMan(configuration: configuration)
+
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -138,7 +137,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     }
 
     cameraMan.delegate = self
-    cameraMan.setup(self.startOnFrontCamera)
+    cameraMan.setup()
   }
 
   override func viewDidAppear(_ animated: Bool) {

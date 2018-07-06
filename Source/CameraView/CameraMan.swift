@@ -11,6 +11,9 @@ protocol CameraManDelegate: class {
 }
 
 class CameraMan {
+
+  let configuration: Configuration!
+
   weak var delegate: CameraManDelegate?
 
   let session = AVCaptureSession()
@@ -19,7 +22,10 @@ class CameraMan {
   var backCamera: AVCaptureDeviceInput?
   var frontCamera: AVCaptureDeviceInput?
   var stillImageOutput: AVCaptureStillImageOutput?
-  var startOnFrontCamera: Bool = false
+
+  public init(configuration: Configuration) {
+    self.configuration = configuration
+  }
 
   deinit {
     stop()
@@ -27,8 +33,7 @@ class CameraMan {
 
   // MARK: - Setup
 
-  func setup(_ startOnFrontCamera: Bool = false) {
-    self.startOnFrontCamera = startOnFrontCamera
+  func setup() {
     checkPermission()
   }
 
@@ -103,7 +108,7 @@ class CameraMan {
     // Devices
     setupDevices()
 
-    guard let input = (self.startOnFrontCamera) ? frontCamera ?? backCamera : backCamera, let output = stillImageOutput else { return }
+    guard let input = (configuration.startOnFrontCamera) ? frontCamera ?? backCamera : backCamera, let output = stillImageOutput else { return }
 
     addInput(input)
 
