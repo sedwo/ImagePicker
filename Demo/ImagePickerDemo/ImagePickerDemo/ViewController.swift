@@ -65,6 +65,12 @@ class ViewController: UIViewController, ImagePickerDelegate {
     guard images.count > 0 else { return }
     DDLogInfo("images.count = \(images.count)")
 
+    // Print exif header as fyi; of first image.
+    if let imageSource = CGImageSourceCreateWithData(images[0].imageData as CFData, nil) {
+      let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)! as Dictionary
+      DDLogVerbose("imageProperties: \(imageProperties)")
+    }
+
     let lightboxImages = images.map {
       return LightboxImage(image: UIImage(data: $0.imageData)!)
     }
