@@ -12,7 +12,7 @@ protocol CameraManDelegate: class {
 
 class CameraMan {
 
-  let configuration: Configuration!
+  let configuration: Configuration
 
   weak var delegate: CameraManDelegate?
 
@@ -231,7 +231,6 @@ class CameraMan {
 
   // Attach EXIF DIctionary data to an image
   private func attachEXIFtoImage(image: Data, EXIF: [String: Any]) -> Data? {
-
     if let imageDataProvider = CGDataProvider(data: image as CFData),
        let imageRef = CGImage(jpegDataProviderSource: imageDataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent),
        let newImageData = CFDataCreateMutable(nil, 0),
@@ -268,6 +267,7 @@ class CameraMan {
           do {
             let fileName = NSUUID().uuidString + "_imagePicker.jpg"
             if let fullURL = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), fileName]) {
+              print("savePhoto: fullURL = \(fullURL)")
               try attached.write(to: fullURL)
               let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fullURL)
               request?.creationDate = Date()
@@ -343,6 +343,7 @@ class CameraMan {
         return
       }
     }
+
     for asset in preferredPresets() {
       if input.device.supportsSessionPreset(AVCaptureSession.Preset(rawValue: asset)) && self.session.canSetSessionPreset(AVCaptureSession.Preset(rawValue: asset)) {
         self.session.sessionPreset = AVCaptureSession.Preset(rawValue: asset)
@@ -350,6 +351,7 @@ class CameraMan {
       }
     }
   }
+
 
   func preferredPresets() -> [String] {
     return [

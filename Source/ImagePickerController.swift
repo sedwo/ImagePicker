@@ -9,8 +9,6 @@ public protocol ImagePickerDelegate: NSObjectProtocol {
   func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
   func cancelButtonDidPress(_ imagePicker: ImagePickerController)
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
 }
 
 
@@ -168,6 +166,14 @@ open class ImagePickerController: UIViewController {
 
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
                                     bottomContainer);
+  }
+
+  open override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    NotificationCenter.default.removeObserver(self,
+                                              name: NSNotification.Name(rawValue: "AVSystemController_SystemVolumeDidChangeNotification"),
+                                              object: nil)
+    UIApplication.shared.setStatusBarHidden(statusBarHidden, with: .fade)
   }
 
   open func resetAssets() {
@@ -376,51 +382,29 @@ extension ImagePickerController: BottomContainerViewDelegate {
   }
 
   func doneButtonDidPress() {
-    if ImagePickerController.photoQuality != nil {
-      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data, location: CLLocation?)]) in
-
-        self?.clearTempData()
-        if let self_ = self {
-          self?.delegate?.doneButtonDidPress(self_, images: images)
-        }
-      })
-    } else {
-      var images: [UIImage]
-      if let preferredImageSize = preferredImageSize {
+    var images: [UIImage]
+    if let preferredImageSize = preferredImageSize {
         images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-      } else {
+    } else {
         images = AssetManager.resolveAssets(stack.assets)
-      }
-      clearTempData()
-      delegate?.doneButtonDidPress(self, images: images)
     }
-  }
+    clearTempData()
+    delegate?.doneButtonDidPress(self, images: images)
+    }
 
   func cancelButtonDidPress() {
     delegate?.cancelButtonDidPress(self)
   }
 
   func imageStackViewDidPress() {
-
-    if ImagePickerController.photoQuality != nil {
-      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data, location: CLLocation?)]) in
-        self?.clearTempData()
-        if let self_ = self {
-          self?.delegate?.wrapperDidPress(self_, images: images)
-        }
-      })
-    } else {
-      var images: [UIImage]
-      if let preferredImageSize = preferredImageSize {
+    var images: [UIImage]
+    if let preferredImageSize = preferredImageSize {
         images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-      } else {
+    } else {
         images = AssetManager.resolveAssets(stack.assets)
-      }
-      clearTempData()
-      delegate?.wrapperDidPress(self, images: images)
     }
+    clearTempData()
+    delegate?.wrapperDidPress(self, images: images)
   }
 
   private func clearTempData() {

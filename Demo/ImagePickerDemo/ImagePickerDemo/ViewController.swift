@@ -63,29 +63,6 @@ class ViewController: UIViewController, ImagePickerDelegate {
   }
 
 
-
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
-    DDLogVerbose("")
-
-    guard images.count > 0 else { return }
-    DDLogInfo("images.count = \(images.count)")
-
-    let lightboxImages = images.map {
-      return LightboxImage(image: UIImage(data: $0.imageData)!)
-    }
-
-    let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
-    imagePicker.present(lightbox, animated: true, completion: nil)
-
-
-  }
-
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
-    DDLogVerbose("")
-    imagePicker.dismiss(animated: true, completion: nil)
-  }
-
-
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
     DDLogInfo("")
 
