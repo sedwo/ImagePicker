@@ -110,4 +110,11 @@ extension Configuration {
 
     return Helper.getTransform(fromDeviceOrientation: Helper.previousOrientation)
   }
+
+  var tempImageDirectory: URL? {
+    let url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent("imagePicker", isDirectory: true)
+    return FileManager.default.createDirectory(url)
+  }
+
+
 }

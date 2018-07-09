@@ -262,16 +262,20 @@ class CameraMan {
             currentProperties[kCGImagePropertyExifDictionary as String] = exif
         }
 
-        if let attached = self.attachEXIFtoImage(image: imageData, EXIF: currentProperties) {
+        if let encodedImageData = self.attachEXIFtoImage(image: imageData, EXIF: currentProperties) {
           do {
-            let fileName = NSUUID().uuidString + "_imagePicker.jpg"
-            if let fullURL = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), fileName]) {
-              print("savePhoto: fullURL = \(fullURL)")
-              try attached.write(to: fullURL)
-              let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fullURL)
+            // Save full image.
+            let imageFileName = "\(NSUUID().uuidString).jpg"
+            if let imageFilepath = self.configuration.tempImageDirectory?.appendingPathComponent(imageFileName) {
+              try encodedImageData.write(to: imageFilepath)
+              print("saved .jpg image in: \(imageFilepath)")
+
+              // Create request for adding image asset to the Photos library.
+              let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: imageFilepath)
               request?.creationDate = Date()
               request?.location = location
             }
+
           } catch let err {
             fatalError(err.localizedDescription)
           }
@@ -283,8 +287,6 @@ class CameraMan {
       }
     })
   }
-
-
 
   func flash(_ mode: AVCaptureDevice.FlashMode) {
     guard let device = currentInput?.device, device.isFlashModeSupported(mode) else { return }

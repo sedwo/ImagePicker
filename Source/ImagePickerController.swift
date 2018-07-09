@@ -395,32 +395,32 @@ extension ImagePickerController: BottomContainerViewDelegate {
 
   func doneButtonDidPress() {
     if ImagePickerController.photoQuality != nil {
-        AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-            (images: [(imageData: Data,location: CLLocation?)]) in
+      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
+        (images: [(imageData: Data,location: CLLocation?)]) in
 
-            self?.clearTempData()
-            if let self_ = self {
-                self?.delegate?.doneButtonDidPress(self_, images: images)
-            }
-        })
-    } else {
-        var images: [UIImage]
-        if let preferredImageSize = preferredImageSize {
-            images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-        } else {
-            images = AssetManager.resolveAssets(stack.assets)
+        self?.clearTempData()
+        if let self_ = self {
+          self?.delegate?.doneButtonDidPress(self_, images: images)
         }
-        clearTempData()
-        delegate?.doneButtonDidPress(self, images: images)
+      })
+    } else {
+      var images: [UIImage]
+      if let preferredImageSize = preferredImageSize {
+        images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
+      } else {
+        images = AssetManager.resolveAssets(stack.assets)
+      }
+      clearTempData()
+      delegate?.doneButtonDidPress(self, images: images)
     }
   }
 
   func cancelButtonDidPress() {
+    clearTempData()
     delegate?.cancelButtonDidPress(self)
   }
 
   func imageStackViewDidPress() {
-
     if ImagePickerController.photoQuality != nil {
       AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
         (images: [(imageData: Data,location: CLLocation?)]) in
@@ -430,34 +430,26 @@ extension ImagePickerController: BottomContainerViewDelegate {
         }
       })
     } else {
-    var images: [UIImage]
-    if let preferredImageSize = preferredImageSize {
+      var images: [UIImage]
+      if let preferredImageSize = preferredImageSize {
         images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-    } else {
+      } else {
         images = AssetManager.resolveAssets(stack.assets)
-    }
-    clearTempData()
-    delegate?.wrapperDidPress(self, images: images)
+      }
+      clearTempData()
+      delegate?.wrapperDidPress(self, images: images)
     }
   }
 
   private func clearTempData() {
-    let fileManager = FileManager.default
-    let documentsURL = URL(string: NSTemporaryDirectory())!
-    do {
-      let fileURLs = try fileManager.contentsOfDirectory(atPath: NSTemporaryDirectory())
-      for file in fileURLs {
-        if file.contains("imagePicker.jpg") {
-          if let urlFile = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), file]) {
-            try! fileManager.removeItem(at:urlFile)
-          }
-        }
-      }
-    } catch {
-      print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+    if let tempDirectory = self.configuration.tempImageDirectory {
+      FileManager.default.removeDirectory(tempDirectory)
     }
+
   }
+
 }
+
 
 extension ImagePickerController: CameraViewDelegate {
 
@@ -506,7 +498,6 @@ extension ImagePickerController: CameraViewDelegate {
 
   func applyOrientationTransforms() {
     let rotate = configuration.rotationTransform
-
     UIView.animate(withDuration: 0.25, animations: {
       [self.topView.rotateCamera, self.bottomContainer.pickerButton,
        self.bottomContainer.stackView, self.bottomContainer.doneButton].forEach {
