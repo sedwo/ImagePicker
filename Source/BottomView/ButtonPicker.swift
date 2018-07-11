@@ -27,10 +27,8 @@ class ButtonPicker: UIButton {
 
   // MARK: - Initializers
 
-  public init(configuration: Configuration? = nil) {
-    if let configuration = configuration {
-      self.configuration = configuration
-    }
+  public init(configuration: Configuration) {
+    self.configuration = configuration
     super.init(frame: .zero)
     configure()
   }
@@ -88,8 +86,18 @@ class ButtonPicker: UIButton {
   // MARK: - Actions
 
   @objc func recalculatePhotosCount(_ notification: Notification) {
-    guard let sender = notification.object as? ImageStack else { return }
-    numberLabel.text = sender.assets.isEmpty ? "" : String(sender.assets.count)
+    guard let imageStack = notification.object as? ImageStack else { return }
+    numberLabel.text = imageStack.isEmpty() ? "" : String(imageStack.count())
+
+
+/*
+    if self.configuration.savePhotosToCameraRoll {
+      numberLabel.text = sender.assets.isEmpty ? "" : String(sender.assets.count)
+    } else { // include image files in our /tmp cache
+      guard let imageFilesCount = FileManager.default.fileCountIn(self.configuration.tempImageDirectory!) else { return }
+      numberLabel.text = (sender.assets.isEmpty && imageFilesCount == 0) ? "" : String(sender.assets.count+imageFilesCount)
+    }
+*/
   }
 
   @objc func pickerButtonDidPress(_ button: UIButton) {

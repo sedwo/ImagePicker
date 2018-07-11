@@ -17,7 +17,7 @@ extension ImageGalleryView: UICollectionViewDataSource {
 
     let asset = assets[(indexPath as NSIndexPath).row]
 
-    AssetManager.resolveAsset(asset, size: CGSize(width: 160, height: 240), shouldPreferLowRes: configuration.useLowResolutionPreviewImage) { image in
+    AssetManager.resolveAsset(asset, size: CGSize(width: 160, height: 240), shouldPreferLowRes: configuration.useLowResolutionPreviewImage) { [unowned self] image in
       if let image = image {
         cell.configureCell(image)
 
@@ -32,7 +32,7 @@ extension ImageGalleryView: UICollectionViewDataSource {
         }
 
         if self.selectedStack.containsAsset(asset) {
-          cell.selectedImageView.image = AssetManager.getImage("selectedImageGallery")
+          cell.selectedImageView.image = AssetManager.getResourceImage("selectedImageGallery")
           cell.selectedImageView.alpha = 1
           cell.selectedImageView.transform = CGAffineTransform.identity
         } else {

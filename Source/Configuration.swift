@@ -27,7 +27,7 @@ import UIKit
   @objc public var OKButtonTitle = "OK"
   @objc public var cancelButtonTitle = "Cancel"
   @objc public var doneButtonTitle = "Done"
-  @objc public var noImagesTitle = "No images available"
+  @objc public var noImagesTitle = "No images available ... ?"
   @objc public var noCameraTitle = "Camera is not available"
   @objc public var settingsTitle = "Settings"
   @objc public var requestPermissionTitle = "Permission denied"
@@ -55,6 +55,7 @@ import UIKit
   @objc public var useLowResolutionPreviewImage = false
   @objc public var startOnFrontCamera: Bool = false
   @objc public var exifUserComment = "hyper imagePicker"
+  @objc public var savePhotosToCameraRoll = true    // else it caches them in `tempImageDirectory`
 
   // MARK: Images
   @objc public var indicatorView: UIView = {
@@ -111,9 +112,10 @@ extension Configuration {
     return Helper.getTransform(fromDeviceOrientation: Helper.previousOrientation)
   }
 
-  var tempImageDirectory: URL? {
+  var tempImageDirectory: URL {
     let url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent("imagePicker", isDirectory: true)
-    return FileManager.default.createDirectory(url)
+    // Create it if it doesn't exist.
+    return FileManager.default.createDirectory(url)!
   }
 
 

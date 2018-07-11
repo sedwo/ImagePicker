@@ -232,7 +232,7 @@ extension ImageGalleryView: UICollectionViewDelegate {
 
     let asset = assets[(indexPath as NSIndexPath).row]
 
-    AssetManager.resolveAsset(asset, size: CGSize(width: 100, height: 100), shouldPreferLowRes: configuration.useLowResolutionPreviewImage) { image in
+    AssetManager.resolveAsset(asset, size: CGSize(width: 100, height: 100), shouldPreferLowRes: configuration.useLowResolutionPreviewImage) { [unowned self] image in
       guard image != nil else { return }
 
       if cell.selectedImageView.image != nil {
@@ -243,7 +243,7 @@ extension ImageGalleryView: UICollectionViewDelegate {
         })
         self.selectedStack.dropAsset(asset)
       } else if self.imageLimit == 0 || self.imageLimit > self.selectedStack.assets.count {
-        cell.selectedImageView.image = AssetManager.getImage("selectedImageGallery")
+        cell.selectedImageView.image = AssetManager.getResourceImage("selectedImageGallery")
         cell.selectedImageView.transform = CGAffineTransform(scaleX: 0, y: 0)
         UIView.animate(withDuration: 0.2, animations: {
           cell.selectedImageView.transform = CGAffineTransform.identity

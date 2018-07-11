@@ -250,32 +250,32 @@ class CameraMan {
     PHPhotoLibrary.shared().performChanges({
 
       if let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
-         var currentProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] {
+         var imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] {
 
         if let location = location {
-          currentProperties[kCGImagePropertyGPSDictionary as String] = self.getGPSDictionary(location: location)
+          imageProperties[kCGImagePropertyGPSDictionary as String] = self.getGPSDictionary(location: location)
         }
 
         // Embed a custom user string inside EXIF header.
-        if var exif = currentProperties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
+        if var exif = imageProperties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
             exif[kCGImagePropertyExifUserComment as String] = self.configuration.exifUserComment
-            currentProperties[kCGImagePropertyExifDictionary as String] = exif
+            imageProperties[kCGImagePropertyExifDictionary as String] = exif
         }
 
-        if let encodedImageData = self.attachEXIFtoImage(image: imageData, EXIF: currentProperties) {
+        if let encodedImageData = self.attachEXIFtoImage(image: imageData, EXIF: imageProperties) {
           do {
             // Save full image.
             let imageFileName = "\(NSUUID().uuidString).jpg"
-            if let imageFilepath = self.configuration.tempImageDirectory?.appendingPathComponent(imageFileName) {
-              try encodedImageData.write(to: imageFilepath)
-              print("saved .jpg image in: \(imageFilepath)")
+            let imageFilepath = self.configuration.tempImageDirectory.appendingPathComponent(imageFileName)
+            try encodedImageData.write(to: imageFilepath)
+            print("saved .jpg image in: \(imageFilepath)")
 
+            if self.configuration.savePhotosToCameraRoll {
               // Create request for adding image asset to the Photos library.
               let request = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: imageFilepath)
               request?.creationDate = Date()
               request?.location = location
             }
-
           } catch let err {
             fatalError(err.localizedDescription)
           }

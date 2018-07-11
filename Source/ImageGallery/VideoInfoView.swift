@@ -9,7 +9,7 @@ class VideoInfoView: UIView {
   }
 
   private lazy var videoIcon: UIImageView = {
-    var videoIcon = UIImageView(image: AssetManager.getImage("video"))
+    var videoIcon = UIImageView(image: AssetManager.getResourceImage("video"))
     videoIcon.frame = CGRect(x: 3,
                              y: 0,
                              width: self.bounds.height,
