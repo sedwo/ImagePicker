@@ -40,12 +40,9 @@ class ViewController: UIViewController, ImagePickerDelegate {
     return button
   }
 
-
   @objc func showImagePickerButton(button: UIButton) {
     let config = Configuration()
-    config.doneButtonTitle = "Finish"
-    config.noImagesTitle = "Sorry! There are no images here!"
-    config.showsImageCountLabel = false
+//    config.savePhotosToCameraRoll = false
 
     let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
@@ -58,21 +55,14 @@ class ViewController: UIViewController, ImagePickerDelegate {
 
   // MARK: - ImagePickerDelegate(s)
 
-  // Called only if set value to ImagePickerController.photoQuality
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
     DDLogVerbose("")
 
     guard images.count > 0 else { return }
     DDLogInfo("images.count = \(images.count)")
 
-    // Print exif header as fyi; of first image.
-    if let imageSource = CGImageSourceCreateWithData(images[0].imageData as CFData, nil) {
-      let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)! as Dictionary
-      DDLogVerbose("imageProperties: \(imageProperties)")
-    }
-
     let lightboxImages = images.map {
-      return LightboxImage(image: UIImage(data: $0.imageData)!)
+      return LightboxImage(image: $0.image!)
     }
 
     let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
@@ -80,16 +70,21 @@ class ViewController: UIViewController, ImagePickerDelegate {
   }
 
 
-  // Called only if set value to ImagePickerController.photoQuality
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data, location: CLLocation?)]) {
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
     DDLogVerbose("")
+
+    guard images.count > 0 else { return }
+    for (index, imageData) in images.enumerated() {
+      DDLogInfo("image[\(index)] path = \(String(describing: imageData.imageFileURL))")
+    }
+
+
     imagePicker.dismiss(animated: true, completion: nil)
   }
 
 
   func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-    DDLogInfo("")
-
+    DDLogVerbose("")
     imagePicker.dismiss(animated: true, completion: nil)
   }
 

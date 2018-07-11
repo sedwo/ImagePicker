@@ -5,22 +5,16 @@ import Photos
 
 
 public protocol ImagePickerDelegate: NSObjectProtocol {
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
   func cancelButtonDidPress(_ imagePicker: ImagePickerController)
-
-  /// Called only if set value to ImagePickerController.photoQuality
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)])
 }
 
 public extension ImagePickerDelegate {
   // defaults.
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) { print("\(#function) default")}
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) { print("\(#function) default")}
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)]) { print("\(#function) default")}
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data,location: CLLocation?)]) { print("\(#function) default")}
-  func cancelButtonDidPress(_ imagePicker: ImagePickerController) { print("\(#function) default")}
+  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
+  func cancelButtonDidPress(_ imagePicker: ImagePickerController) { print("\(#function) default") }
 }
 
 
@@ -80,11 +74,14 @@ open class ImagePickerController: UIViewController {
     return view
     }()
 
+  lazy var stack: ImageStack = {
+    return ImageStack()
+  }()
+
   var volume = AVAudioSession.sharedInstance().outputVolume
 
   open weak var delegate: ImagePickerDelegate?
   open static var photoQuality: AVCaptureSession.Preset?
-  open var stack = ImageStack()
   open var imageLimit = 0
   open var preferredImageSize: CGSize?
   open var startOnFrontCamera = false
@@ -108,16 +105,23 @@ open class ImagePickerController: UIViewController {
   @objc public required init(configuration: Configuration = Configuration()) {
     self.configuration = configuration
     super.init(nibName: nil, bundle: nil)
+    self.commonInit()
   }
 
   public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
     self.configuration = Configuration()
     super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    self.commonInit()
   }
 
   public required init?(coder aDecoder: NSCoder) {
     self.configuration = Configuration()
     super.init(coder: aDecoder)
+    self.commonInit()
+  }
+
+  func commonInit() {
+    clearTempData()   // fresh start
   }
 
   // MARK: - View lifecycle
@@ -295,10 +299,8 @@ open class ImagePickerController: UIViewController {
   }
 
   @objc func adjustButtonTitle(_ notification: Notification) {
-    guard let sender = notification.object as? ImageStack else { return }
-
-    let title = !sender.assets.isEmpty ?
-      configuration.doneButtonTitle : configuration.cancelButtonTitle
+    guard let imageStack = notification.object as? ImageStack else { return }
+    let title = !imageStack.isEmpty() ? configuration.doneButtonTitle : configuration.cancelButtonTitle
     bottomContainer.doneButton.setTitle(title, for: UIControlState())
   }
 
@@ -363,7 +365,7 @@ open class ImagePickerController: UIViewController {
   }
 
   fileprivate func isBelowImageLimit() -> Bool {
-    return (imageLimit == 0 || imageLimit > galleryView.selectedStack.assets.count)
+    return (imageLimit == 0 || imageLimit > galleryView.selectedStack.count())
   }
 
   fileprivate func takePicture() {
@@ -394,58 +396,48 @@ extension ImagePickerController: BottomContainerViewDelegate {
   }
 
   func doneButtonDidPress() {
-    if ImagePickerController.photoQuality != nil {
-      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data,location: CLLocation?)]) in
-
-        self?.clearTempData()
+    if let preferredImageSize = preferredImageSize {
+      AssetManager.resolveAssets(stack.assets, size: preferredImageSize, completion: { [weak self]
+        (images: [(image: UIImage?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.doneButtonDidPress(self_, images: images)
         }
       })
     } else {
-      var images: [UIImage]
-      if let preferredImageSize = preferredImageSize {
-        images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-      } else {
-        images = AssetManager.resolveAssets(stack.assets)
-      }
-      clearTempData()
-      delegate?.doneButtonDidPress(self, images: images)
+      AssetManager.resolveAssets(stack.assets, completion: { [weak self]
+        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        if let self_ = self {
+          self?.delegate?.doneButtonDidPress(self_, images: images)
+        }
+      })
     }
   }
 
   func cancelButtonDidPress() {
-    clearTempData()
+    clearTempData()   // discard
     delegate?.cancelButtonDidPress(self)
   }
 
   func imageStackViewDidPress() {
-    if ImagePickerController.photoQuality != nil {
-      AssetManager.resolveAssets(stack.assets, imagesClosers: { [weak self]
-        (images: [(imageData: Data,location: CLLocation?)]) in
-        self?.clearTempData()
+    if let preferredImageSize = preferredImageSize {
+      AssetManager.resolveAssets(stack.assets, size: preferredImageSize, completion: { [weak self]
+        (images: [(image: UIImage?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.wrapperDidPress(self_, images: images)
         }
       })
     } else {
-      var images: [UIImage]
-      if let preferredImageSize = preferredImageSize {
-        images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-      } else {
-        images = AssetManager.resolveAssets(stack.assets)
-      }
-      clearTempData()
-      delegate?.wrapperDidPress(self, images: images)
+      AssetManager.resolveAssets(stack.assets, completion: { [weak self]
+        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        if let self_ = self {
+          self?.delegate?.wrapperDidPress(self_, images: images)
+        }
+      })
     }
   }
 
   private func clearTempData() {
-    if let tempDirectory = self.configuration.tempImageDirectory {
-      FileManager.default.removeDirectory(tempDirectory)
-    }
-
+    FileManager.default.removeDirectory(self.configuration.tempImageDirectory)
   }
 
 }
@@ -460,24 +452,30 @@ extension ImagePickerController: CameraViewDelegate {
   }
 
   func imageToLibrary() {
-    guard let collectionSize = galleryView.collectionSize else { return }
+    if self.configuration.savePhotosToCameraRoll {
+      guard let collectionSize = galleryView.collectionSize else { return }
 
-    galleryView.fetchPhotos {
-      guard let asset = self.galleryView.assets.first else { return }
-      if self.configuration.allowMultiplePhotoSelection == false {
-        self.stack.assets.removeAll()
+      galleryView.fetchPhotos {
+        guard let asset = self.galleryView.assets.first else { return }
+        if self.configuration.allowMultiplePhotoSelection == false {
+          self.stack.assets.removeAll()
+        }
+        self.stack.pushAsset(asset)
       }
-      self.stack.pushAsset(asset)
+
+      UIView.animate(withDuration: 0.3, animations: {
+        self.galleryView.collectionView.transform = CGAffineTransform(translationX: collectionSize.width, y: 0)
+      }, completion: { _ in
+        self.galleryView.collectionView.transform = CGAffineTransform.identity
+      })
+    } else {  // Don't save to camera roll, and track the cached JPG files
+      let mostRecentFileURL = FileManager.default.getMostRecentFileIn(self.configuration.tempImageDirectory)!
+      let fileAsset = ImageFileAsset(with: mostRecentFileURL)
+      self.stack.pushAsset(fileAsset)
     }
 
     galleryView.shouldTransform = true
     bottomContainer.pickerButton.isEnabled = true
-
-    UIView.animate(withDuration: 0.3, animations: {
-      self.galleryView.collectionView.transform = CGAffineTransform(translationX: collectionSize.width, y: 0)
-    }, completion: { _ in
-      self.galleryView.collectionView.transform = CGAffineTransform.identity
-    })
   }
 
   func cameraNotAvailable() {
@@ -493,7 +491,10 @@ extension ImagePickerController: CameraViewDelegate {
   }
 
   @objc public func handleRotation(_ note: Notification?) {
-    applyOrientationTransforms()
+    // Only transform when orientation is portrait or landscape
+    if UIDevice.current.orientation.isPortrait || UIDevice.current.orientation.isLandscape {
+      applyOrientationTransforms()
+    }
   }
 
   func applyOrientationTransforms() {

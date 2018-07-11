@@ -33,4 +33,66 @@ extension FileManager {
     }
   }
 
+
+  func fileCountIn(_ filePath: URL) -> Int {
+    do {
+      let fileURLs = try self.contentsOfDirectory(at: filePath, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+      return fileURLs.count
+    } catch {
+      print("Error while enumerating files \(filePath.path): \(error.localizedDescription)")
+      return -1
+    }
+  }
+
+
+  func getAllFilesIn(_ filePath: URL) -> [URL]? {
+    var fileURLs: [URL] = []
+    var sortedFileURLs: [URL] = []
+
+    do {
+      let keys = [URLResourceKey.contentModificationDateKey,
+                  URLResourceKey.creationDateKey]
+      fileURLs = try self.contentsOfDirectory(at: filePath, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)
+    } catch {
+      print("Error while enumerating files \(filePath.path): \(error.localizedDescription)")
+      return nil
+    }
+
+    let orderedFullPaths = fileURLs.sorted(by: { (url1: URL, url2: URL) -> Bool in
+      do {
+        let values1 = try url1.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
+        let values2 = try url2.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
+
+        if let date1 = values1.creationDate, let date2 = values2.creationDate {
+          return date1.compare(date2) == ComparisonResult.orderedDescending
+        }
+      } catch {
+        print("Error comparing : \(error.localizedDescription)")
+        return false
+      }
+      return true
+    })
+
+    for fileName in orderedFullPaths {
+      do {
+        let values = try fileName.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
+        if let date = values.creationDate{
+          sortedFileURLs.append(fileName)
+        }
+      }
+      catch {
+        print("Error sorting file URL's. : \(error.localizedDescription)")
+        return nil
+      }
+    }
+
+    return sortedFileURLs
+  }
+
+
+  func getMostRecentFileIn(_ filePath: URL) -> URL? {
+    return getAllFilesIn(filePath)?.first
+  }
+
+
 }

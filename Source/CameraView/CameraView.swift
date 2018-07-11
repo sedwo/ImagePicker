@@ -22,7 +22,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
 
   lazy var focusImageView: UIImageView = { [unowned self] in
     let imageView = UIImageView()
-    imageView.image = AssetManager.getImage("focusIcon")
+    imageView.image = AssetManager.getResourceImage("focusIcon")
     imageView.backgroundColor = UIColor.clear
     imageView.frame = CGRect(x: 0, y: 0, width: 110, height: 110)
     imageView.alpha = 0
