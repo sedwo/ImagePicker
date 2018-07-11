@@ -55,7 +55,7 @@ class ViewController: UIViewController, ImagePickerDelegate {
 
   // MARK: - ImagePickerDelegate(s)
 
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
     DDLogVerbose("")
 
     guard images.count > 0 else { return }

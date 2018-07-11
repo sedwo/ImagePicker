@@ -5,14 +5,14 @@ import Photos
 
 
 public protocol ImagePickerDelegate: NSObjectProtocol {
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
   func cancelButtonDidPress(_ imagePicker: ImagePickerController)
 }
 
 public extension ImagePickerDelegate {
   // defaults.
-  func wrapperDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
   func cancelButtonDidPress(_ imagePicker: ImagePickerController) { print("\(#function) default") }
 }
@@ -423,14 +423,14 @@ extension ImagePickerController: BottomContainerViewDelegate {
       AssetManager.resolveAssets(stack.assets, size: preferredImageSize, completion: { [weak self]
         (images: [(image: UIImage?, imageFileURL: URL?)]) in
         if let self_ = self {
-          self?.delegate?.wrapperDidPress(self_, images: images)
+          self?.delegate?.imageStackDidPress(self_, images: images)
         }
       })
     } else {
       AssetManager.resolveAssets(stack.assets, completion: { [weak self]
         (images: [(image: UIImage?, imageFileURL: URL?)]) in
         if let self_ = self {
-          self?.delegate?.wrapperDidPress(self_, images: images)
+          self?.delegate?.imageStackDidPress(self_, images: images)
         }
       })
     }

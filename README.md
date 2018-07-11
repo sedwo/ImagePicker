@@ -28,7 +28,7 @@ present(imagePickerController, animated: true, completion: nil)
 **ImagePicker** has three delegate methods that will inform you what the users are up to:
 
 ```swift
-func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
+func imageStackDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
 func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
 func cancelButtonDidPress(_ imagePicker: ImagePickerController)
 ```
