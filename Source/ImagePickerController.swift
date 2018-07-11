@@ -5,15 +5,15 @@ import Photos
 
 
 public protocol ImagePickerDelegate: NSObjectProtocol {
-  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)])
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)])
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)])
   func cancelButtonDidPress(_ imagePicker: ImagePickerController)
 }
 
 public extension ImagePickerDelegate {
   // defaults.
-  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) { print("\(#function) default") }
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)]) { print("\(#function) default") }
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)]) { print("\(#function) default") }
   func cancelButtonDidPress(_ imagePicker: ImagePickerController) { print("\(#function) default") }
 }
 
@@ -384,6 +384,11 @@ open class ImagePickerController: UIViewController {
       action()
     }
   }
+
+  func clearTempData() {
+    FileManager.default.removeDirectory(self.configuration.tempImageDirectory)
+  }
+
 }
 
 
@@ -398,14 +403,14 @@ extension ImagePickerController: BottomContainerViewDelegate {
   func doneButtonDidPress() {
     if let preferredImageSize = preferredImageSize {
       AssetManager.resolveAssets(stack.assets, size: preferredImageSize, completion: { [weak self]
-        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        (images: [(imageData: Data?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.doneButtonDidPress(self_, images: images)
         }
       })
     } else {
       AssetManager.resolveAssets(stack.assets, completion: { [weak self]
-        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        (images: [(imageData: Data?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.doneButtonDidPress(self_, images: images)
         }
@@ -421,23 +426,19 @@ extension ImagePickerController: BottomContainerViewDelegate {
   func imageStackViewDidPress() {
     if let preferredImageSize = preferredImageSize {
       AssetManager.resolveAssets(stack.assets, size: preferredImageSize, completion: { [weak self]
-        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        (images: [(imageData: Data?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.imageStackDidPress(self_, images: images)
         }
       })
     } else {
       AssetManager.resolveAssets(stack.assets, completion: { [weak self]
-        (images: [(image: UIImage?, imageFileURL: URL?)]) in
+        (images: [(imageData: Data?, imageFileURL: URL?)]) in
         if let self_ = self {
           self?.delegate?.imageStackDidPress(self_, images: images)
         }
       })
     }
-  }
-
-  private func clearTempData() {
-    FileManager.default.removeDirectory(self.configuration.tempImageDirectory)
   }
 
 }

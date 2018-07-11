@@ -42,7 +42,7 @@ class ViewController: UIViewController, ImagePickerDelegate {
 
   @objc func showImagePickerButton(button: UIButton) {
     let config = Configuration()
-//    config.savePhotosToCameraRoll = false
+    config.savePhotosToCameraRoll = false
 
     let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
@@ -55,14 +55,14 @@ class ViewController: UIViewController, ImagePickerDelegate {
 
   // MARK: - ImagePickerDelegate(s)
 
-  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
+  func imageStackDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)]) {
     DDLogVerbose("")
 
     guard images.count > 0 else { return }
     DDLogInfo("images.count = \(images.count)")
 
     let lightboxImages = images.map {
-      return LightboxImage(image: $0.image!)
+      return LightboxImage(image: UIImage(data: $0.imageData!)!)
     }
 
     let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
@@ -70,14 +70,41 @@ class ViewController: UIViewController, ImagePickerDelegate {
   }
 
 
-  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(image: UIImage?, imageFileURL: URL?)]) {
+  func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)]) {
     DDLogVerbose("")
 
     guard images.count > 0 else { return }
-    for (index, imageData) in images.enumerated() {
-      DDLogInfo("image[\(index)] path = \(String(describing: imageData.imageFileURL))")
-    }
+    DDLogInfo("images.count = \(images.count)")
 
+    for (index, image) in images.enumerated() {
+      DDLogInfo("image[\(index)] path = \(String(describing: image.imageFileURL?.path))")
+
+      // Move images into our own app.
+      let destFileName = "\(UUID().uuidString).jpg"
+      let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+      let destPath = documentsDirectory.appendingPathComponent(destFileName, isDirectory: false)
+
+      do {
+        if image.imageFileURL == nil {  // PHAsset data
+          if let data = image.imageData {
+            try data.write(to: destPath)
+            DDLogVerbose("PHAsset data written")
+          }
+        } else {  // file asset (local .jpg)
+          if let imageFilePath = image.imageFileURL?.path {
+            if FileManager.default.fileExists(atPath: imageFilePath) {
+              try FileManager.default.moveItem(atPath: imageFilePath, toPath: destPath.path)
+              DDLogVerbose("local .jpg written")
+            } else {
+              DDLogError("file doesn't exist  :(")
+            }
+          }
+        }
+      }
+      catch let error as NSError {
+        DDLogError("Ooops! Something went wrong: \(error)")
+      }
+    }
 
     imagePicker.dismiss(animated: true, completion: nil)
   }

@@ -32,12 +32,12 @@ open class AssetManager {
   }
 
 
-  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping ([(image: UIImage?, imageFileURL: URL?)])->()) {
+  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping ([(imageData: Data?, imageFileURL: URL?)])->()) {
     let imageManager = PHImageManager.default()
     let requestOptions = PHImageRequestOptions()
     requestOptions.isSynchronous = true
 
-    var images = [(image: UIImage?, imageFileURL: URL?)]()
+    var images = [(imageData: Data?, imageFileURL: URL?)]()
 
     if !assets.isEmpty {
       for asset in assets {
@@ -47,7 +47,8 @@ open class AssetManager {
           let fileAsset = asset as! ImageFileAsset
           if let image = UIImage(contentsOfFile: fileAsset.fileURL.path) {
             let scaledImage = image.scaled(to: size)
-            images.append((scaledImage, fileAsset.fileURL))
+            let scaledImageData = UIImageJPEGRepresentation(scaledImage, 1.0)
+            images.append((scaledImageData, fileAsset.fileURL))
 
             if (images.count == assets.count) {
               completion(images)
@@ -56,15 +57,20 @@ open class AssetManager {
 
         } else {  // camera roll asset
 
-          imageManager.requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, _ in
-            if let image = image {
-              images.append((image: image, nil))
-            }
-
-            if (images.count == assets.count) {
-              completion(images)
-            }
-
+          let options = PHContentEditingInputRequestOptions()
+          options.isNetworkAccessAllowed = true
+          asset.requestContentEditingInput(with: options) { (contentEditingInput: PHContentEditingInput?, _) -> Void in
+            let optionsRequest = PHImageRequestOptions()
+            optionsRequest.version = .original
+            optionsRequest.isSynchronous = true
+            imageManager.requestImageData(for: asset, options: optionsRequest, resultHandler: { (data, string, orientation, info) in
+              if let data = data {
+                images.append((imageData: data, nil))
+              }
+              if (images.count == assets.count) {
+                completion(images)
+              }
+            })
           }
         }
       }
