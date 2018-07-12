@@ -22,7 +22,9 @@ open class ImageStack {
   open func dropAsset(_ asset: PHAsset) {
     for (index, item) in assets.enumerated() {
       if asset is ImageFileAsset && item is ImageFileAsset {
-        if item == asset {
+        let fileItem = item as! ImageFileAsset
+        let fileAsset = asset as! ImageFileAsset
+        if fileItem.fileURL == fileAsset.fileURL {
           assets.remove(at: index)
         }
       } else if asset is ImageFileAsset || item is ImageFileAsset {

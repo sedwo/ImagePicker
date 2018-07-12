@@ -28,7 +28,6 @@ open class AssetManager {
         }
       }
     }
-
   }
 
 

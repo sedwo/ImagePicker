@@ -7,9 +7,16 @@ import AVFoundation
 
 
 
-class ViewController: UIViewController, ImagePickerDelegate {
+class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerDeleteDelegate {
+
+  lazy var imagePicker: ImagePickerController = {
+    let config = Configuration()
+    config.savePhotosToCameraRoll = false
+    return ImagePickerController(configuration: config)
+  }()
 
   lazy var button: UIButton = self.makeButton()
+
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -41,10 +48,6 @@ class ViewController: UIViewController, ImagePickerDelegate {
   }
 
   @objc func showImagePickerButton(button: UIButton) {
-    let config = Configuration()
-    config.savePhotosToCameraRoll = false
-
-    let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
     ImagePickerController.photoQuality = AVCaptureSession.Preset.photo  // full resolution photo quality output
 
@@ -65,8 +68,16 @@ class ViewController: UIViewController, ImagePickerDelegate {
       return LightboxImage(image: UIImage(data: $0.imageData!)!)
     }
 
+    LightboxConfig.DeleteButton.enabled = true
+    LightboxConfig.InfoLabel.ellipsisText = "Show more"
+
     let lightbox = LightboxController(images: lightboxImages, startIndex: 0)
+    lightbox.imageDeleteDelegate = self
+
     imagePicker.present(lightbox, animated: true, completion: nil)
+
+
+
   }
 
 
@@ -113,6 +124,18 @@ class ViewController: UIViewController, ImagePickerDelegate {
   func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
     DDLogVerbose("")
     imagePicker.dismiss(animated: true, completion: nil)
+  }
+
+
+  // MARK: - LightboxControllereDelegate(s)
+
+  func lightboxController(_ controller: LightboxController, didDeleteImageAt index: Int) {
+    print("remove image at index: \(index)")
+
+    let selectedAsset = imagePicker.galleryView.selectedStack.assets[index]
+    imagePicker.galleryView.selectedStack.dropAsset(selectedAsset)
+
+    DDLogWarn("dropped asset")
   }
 
 
