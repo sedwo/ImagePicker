@@ -51,9 +51,11 @@ open class ImageStack {
 
     for (index, item) in assets.enumerated() {
       if asset is ImageFileAsset && item is ImageFileAsset {
-        if item == asset {
-          contains = true
-          break
+        let fileItem = item as! ImageFileAsset
+        let fileAsset = asset as! ImageFileAsset
+        if fileItem.fileURL == fileAsset.fileURL {
+            contains = true
+            break
         }
       } else if asset is ImageFileAsset || item is ImageFileAsset {
         continue

@@ -19,6 +19,7 @@ open class AssetManager {
       let requestOptions = PHImageRequestOptions()
       requestOptions.deliveryMode = shouldPreferLowRes ? .fastFormat : .highQualityFormat
       requestOptions.isNetworkAccessAllowed = true
+      requestOptions.isSynchronous = true
 
       imageManager.requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, info in
         if let info = info, info["PHImageFileUTIKey"] == nil {
@@ -32,9 +33,6 @@ open class AssetManager {
 
 
   open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping ([(imageData: Data?, imageFileURL: URL?)])->()) {
-    let imageManager = PHImageManager.default()
-    let requestOptions = PHImageRequestOptions()
-    requestOptions.isSynchronous = true
 
     var images = [(imageData: Data?, imageFileURL: URL?)]()
 
@@ -56,21 +54,20 @@ open class AssetManager {
 
         } else {  // camera roll asset
 
-          let options = PHContentEditingInputRequestOptions()
-          options.isNetworkAccessAllowed = true
-          asset.requestContentEditingInput(with: options) { (contentEditingInput: PHContentEditingInput?, _) -> Void in
-            let optionsRequest = PHImageRequestOptions()
-            optionsRequest.version = .original
-            optionsRequest.isSynchronous = true
-            imageManager.requestImageData(for: asset, options: optionsRequest, resultHandler: { (data, string, orientation, info) in
-              if let data = data {
-                images.append((imageData: data, nil))
-              }
-              if (images.count == assets.count) {
-                completion(images)
-              }
-            })
-          }
+          let imageManager = PHImageManager.default()
+          let requestOptions = PHImageRequestOptions()
+          requestOptions.deliveryMode = .highQualityFormat
+          requestOptions.isNetworkAccessAllowed = true
+          requestOptions.isSynchronous = true
+          requestOptions.version = .original
+          imageManager.requestImageData(for: asset, options: requestOptions, resultHandler: { (data, string, orientation, info) in
+            if let data = data {
+              images.append((imageData: data, nil))
+            }
+            if (images.count == assets.count) {
+              completion(images)
+            }
+          })
         }
       }
     }

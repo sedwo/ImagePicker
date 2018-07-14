@@ -4,16 +4,11 @@ import Lightbox
 import CocoaLumberjack
 import CoreLocation
 import AVFoundation
+import Photos
 
 
 
 class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerDeleteDelegate {
-
-  lazy var imagePicker: ImagePickerController = {
-    let config = Configuration()
-    config.savePhotosToCameraRoll = false
-    return ImagePickerController(configuration: config)
-  }()
 
   lazy var button: UIButton = self.makeButton()
 
@@ -38,16 +33,28 @@ class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerD
                          constant: 0))
   }
 
+
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+//    showImagePickerButton()
+  }
+
+
   func makeButton() -> UIButton {
     let button = UIButton()
     button.setTitle("Show ImagePicker", for: .normal)
     button.setTitleColor(UIColor.black, for: .normal)
-    button.addTarget(self, action: #selector(showImagePickerButton(button:)), for: .touchUpInside)
+    button.addTarget(self, action: #selector(showImagePickerButton), for: .touchUpInside)
 
     return button
   }
 
-  @objc func showImagePickerButton(button: UIButton) {
+  
+  @objc func showImagePickerButton() {
+    let config = Configuration()
+    config.savePhotosToCameraRoll = false
+
+    let imagePicker = ImagePickerController(configuration: config)
     imagePicker.delegate = self
     ImagePickerController.photoQuality = AVCaptureSession.Preset.photo  // full resolution photo quality output
 
@@ -75,9 +82,6 @@ class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerD
     lightbox.imageDeleteDelegate = self
 
     imagePicker.present(lightbox, animated: true, completion: nil)
-
-
-
   }
 
 
@@ -130,13 +134,35 @@ class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerD
   // MARK: - LightboxControllereDelegate(s)
 
   func lightboxController(_ controller: LightboxController, didDeleteImageAt index: Int) {
-    print("remove image at index: \(index)")
 
-    let selectedAsset = imagePicker.galleryView.selectedStack.assets[index]
-    imagePicker.galleryView.selectedStack.dropAsset(selectedAsset)
+    if let imagePicker = UIViewController.findVC(vcKind: ImagePickerController.self) {
+      let selectedAsset = imagePicker.galleryView.selectedStack.assets[index]
+      imagePicker.galleryView.selectedStack.dropAsset(selectedAsset)
+      DDLogWarn("dropped asset at index: \(index)")
+    }
 
-    DDLogWarn("dropped asset")
   }
 
+
+}
+
+
+
+extension UIViewController {
+
+  // Returns a ViewController of a class Kind
+  // EXAMPLE: .findVC(vcKind: CustomViewController.self)//ref to an instance of CustomViewController
+  // https://stackoverflow.com/a/50144326/7599
+  public static func findVC<T: UIViewController>(vcKind: T.Type? = nil) -> T? {
+    guard let appDelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
+    if let vc = appDelegate.window?.rootViewController as? T {
+      return vc
+    } else if let vc = appDelegate.window?.rootViewController?.presentedViewController as? T {
+      return vc
+    } else if let vc = appDelegate.window?.rootViewController?.childViewControllers {
+      return vc.lazy.flatMap { $0 as? T }.first
+    }
+    return nil
+  }
 
 }

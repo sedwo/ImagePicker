@@ -305,7 +305,7 @@ open class ImagePickerController: UIViewController {
   }
 
   @objc func dismissIfNeeded() {
-    // If only one image is requested and a push occures, automatically dismiss the ImagePicker
+    // If only one image is requested and a push occurs, automatically dismiss the ImagePicker
     if imageLimit == 1 {
       doneButtonDidPress()
     }
@@ -469,7 +469,7 @@ extension ImagePickerController: CameraViewDelegate {
       }, completion: { _ in
         self.galleryView.collectionView.transform = CGAffineTransform.identity
       })
-    } else {  // Don't save to camera roll, and track the cached JPG files
+    } else {  // Don't save to camera roll, and track the cached JPG file
       let mostRecentFileURL = FileManager.default.getMostRecentFileIn(self.configuration.tempImageDirectory)!
       let fileAsset = ImageFileAsset(with: mostRecentFileURL)
       self.stack.pushAsset(fileAsset)
