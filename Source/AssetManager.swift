@@ -5,7 +5,7 @@ import Photos
 
 open class AssetManager {
 
-  public static func resolveAsset(_ asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), shouldPreferLowRes: Bool = false, completion: @escaping (_ image: UIImage?) -> Void) {
+  public static func resolveAsset(_ asset: PHAsset, size: CGSize = UIScreen.main.bounds.size, shouldPreferLowRes: Bool = false, completion: @escaping (_ image: UIImage?) -> Void) {
 
     if asset is ImageFileAsset {
       // Include internal cached /tmp files.
@@ -32,7 +32,7 @@ open class AssetManager {
   }
 
 
-  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping ([(imageData: Data?, imageFileURL: URL?)])->()) {
+  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = UIScreen.main.bounds.size, completion: @escaping ([(imageData: Data?, imageFileURL: URL?)])->()) {
 
     var images = [(imageData: Data?, imageFileURL: URL?)]()
 
