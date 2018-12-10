@@ -3,7 +3,8 @@ import CocoaLumberjack
 
 // MARK: - DDLogFormatter
 public class MyCustomFormatter: NSObject, DDLogFormatter {
-  let dateFormmater = DateFormatter()
+  private let dateFormmater = DateFormatter()
+
 
   public override init() {
     super.init()
@@ -21,6 +22,22 @@ public class MyCustomFormatter: NSObject, DDLogFormatter {
     let lineNumber = logMessage.line
     let logMsg = logMessage.message
 
-    return "\(dt) [\(file):@\(lineNumber):\(functionName)] - \(logMsg)"
+    var emoji: String = ""
+
+    //        print("logMessage.flag = \(logMessage.flag)")
+    switch logMessage.flag {
+    case .error:
+      emoji = "❌"
+    case .warning:
+      emoji = "⚠️"
+    case .debug:
+      emoji = "🔷"
+    case .verbose:
+      emoji = "🔶"
+    default:
+      emoji = "▫️"
+    }
+
+    return "\(dt) [\(file):@\(lineNumber):\(functionName)] \(emoji) - \(logMsg)"
   }
 }

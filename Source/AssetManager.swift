@@ -44,9 +44,10 @@ open class AssetManager {
           let fileAsset = asset as! ImageFileAsset
           if let image = UIImage(contentsOfFile: fileAsset.fileURL.path) {
             let scaledImage = image.scaled(to: size)
-            let scaledImageData = UIImageJPEGRepresentation(scaledImage, 1.0)
-            images.append((scaledImageData, fileAsset.fileURL))
 
+            if let scaledImageData = scaledImage.jpegData(compressionQuality: 1.0) {
+              images.append((scaledImageData, fileAsset.fileURL))
+            }
             if (images.count == assets.count) {
               completion(images)
             }

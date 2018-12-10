@@ -18,7 +18,7 @@ public extension ImagePickerDelegate {
 }
 
 
-open class ImagePickerController: UIViewController {
+@objc public class ImagePickerController: UIViewController {
 
   let configuration: Configuration
 
@@ -95,26 +95,26 @@ open class ImagePickerController: UIViewController {
   open var doneButtonTitle: String? {
     didSet {
       if let doneButtonTitle = doneButtonTitle {
-        bottomContainer.doneButton.setTitle(doneButtonTitle, for: UIControlState())
+        bottomContainer.doneButton.setTitle(doneButtonTitle, for: UIControl.State())
       }
     }
   }
 
   // MARK: - Initialization
 
-  @objc public required init(configuration: Configuration = Configuration()) {
+  public init(configuration: Configuration = Configuration()) {
     self.configuration = configuration
     super.init(nibName: nil, bundle: nil)
     self.commonInit()
   }
 
-  public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+  override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
     self.configuration = Configuration()
     super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     self.commonInit()
   }
 
-  public required init?(coder aDecoder: NSCoder) {
+  required init?(coder aDecoder: NSCoder) {
     self.configuration = Configuration()
     super.init(coder: aDecoder)
     self.commonInit()
@@ -135,7 +135,7 @@ open class ImagePickerController: UIViewController {
     }
 
     view.addSubview(volumeView)
-    view.sendSubview(toBack: volumeView)
+    view.sendSubviewToBack(volumeView)
 
     view.backgroundColor = UIColor.white
     view.backgroundColor = configuration.mainColor
@@ -179,8 +179,8 @@ open class ImagePickerController: UIViewController {
 
     applyOrientationTransforms()
 
-    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
-                                    bottomContainer);
+    UIAccessibility.post(notification: UIAccessibility.Notification.screenChanged,
+                         argument: bottomContainer);
   }
 
   open override func viewWillDisappear(_ animated: Bool) {
@@ -216,7 +216,7 @@ open class ImagePickerController: UIViewController {
     let alertController = UIAlertController(title: configuration.requestPermissionTitle, message: configuration.requestPermissionMessage, preferredStyle: .alert)
 
     let alertAction = UIAlertAction(title: configuration.OKButtonTitle, style: .default) { _ in
-      if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
+      if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
         UIApplication.shared.openURL(settingsURL)
       }
     }
@@ -278,7 +278,7 @@ open class ImagePickerController: UIViewController {
 
     NotificationCenter.default.addObserver(self,
                                            selector: #selector(handleRotation(_:)),
-                                           name: NSNotification.Name.UIDeviceOrientationDidChange,
+                                           name: UIDevice.orientationDidChangeNotification,
                                            object: nil)
   }
 
@@ -301,7 +301,7 @@ open class ImagePickerController: UIViewController {
   @objc func adjustButtonTitle(_ notification: Notification) {
     guard let imageStack = notification.object as? ImageStack else { return }
     let title = !imageStack.isEmpty() ? configuration.doneButtonTitle : configuration.cancelButtonTitle
-    bottomContainer.doneButton.setTitle(title, for: UIControlState())
+    bottomContainer.doneButton.setTitle(title, for: UIControl.State())
   }
 
   @objc func dismissIfNeeded() {
@@ -387,6 +387,24 @@ open class ImagePickerController: UIViewController {
 
   func clearTempData() {
     FileManager.default.removeDirectory(self.configuration.tempImageDirectory)
+  }
+
+
+  private var meta: [String: Any] = [:]
+
+  // Support for storage of generic values.
+  // eg. passing values through delegate channel.
+
+  public func storeMetaValue(value: Any, forKey: String) {
+    meta[forKey] = value
+  }
+
+  public func retrieveMetaValue(forKey: String) -> Any? {
+    if let val = meta[forKey] {
+      return val
+    } else {
+      return nil
+    }
   }
 
 }

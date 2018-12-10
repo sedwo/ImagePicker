@@ -58,6 +58,8 @@ class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerD
     imagePicker.delegate = self
     ImagePickerController.photoQuality = AVCaptureSession.Preset.photo  // full resolution photo quality output
 
+    imagePicker.storeMetaValue(value: 1048576, forKey: "userID")
+
     present(imagePicker, animated: true, completion: nil)
   }
 
@@ -87,6 +89,11 @@ class ViewController: UIViewController, ImagePickerDelegate, LightboxControllerD
 
   func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [(imageData: Data?, imageFileURL: URL?)]) {
     DDLogVerbose("")
+
+    // Extract user id
+    if let userID = imagePicker.retrieveMetaValue(forKey: "userID") as? Int {
+      DDLogVerbose("userID = \(userID)")
+    }
 
     guard images.count > 0 else { return }
     DDLogInfo("images.count = \(images.count)")
@@ -153,15 +160,42 @@ extension UIViewController {
   // Returns a ViewController of a class Kind
   // EXAMPLE: .findVC(vcKind: CustomViewController.self)//ref to an instance of CustomViewController
   // https://stackoverflow.com/a/50144326/7599
+  // Walk through memory and return a ViewController of a class 'Kind', if found.
   public static func findVC<T: UIViewController>(vcKind: T.Type? = nil) -> T? {
     guard let appDelegate: AppDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
+
     if let vc = appDelegate.window?.rootViewController as? T {
       return vc
     } else if let vc = appDelegate.window?.rootViewController?.presentedViewController as? T {
       return vc
-    } else if let vc = appDelegate.window?.rootViewController?.childViewControllers {
-      return vc.lazy.flatMap { $0 as? T }.first
+    } else if let childViewControllers = appDelegate.window?.rootViewController?.children {
+      // Loop through the array of childViewControllers.
+      let foundVC = childViewControllers.lazy.compactMap { $0 as? T }.first
+      if foundVC != nil {
+        return foundVC
+      }
+      //
+      // Continue looping through childViewControllers for any nested collections.
+      //
+      for childVC in childViewControllers where childVC is UINavigationController {
+        // Walk through the nested array of more childViewControllers.
+        let vcArray = (childVC as! UINavigationController).children
+        let foundVC = vcArray.lazy.compactMap { $0 as? T }.first
+        if foundVC != nil {
+          return foundVC
+        }
+      }
+
+      for childVC in childViewControllers where childVC is UITabBarController {
+        // Walk through the nested array of more childViewControllers.
+        let vcArray = (childVC as! UITabBarController).children
+        let foundVC = vcArray.lazy.compactMap { $0 as? T }.first
+        if foundVC != nil {
+          return foundVC
+        }
+      }
     }
+
     return nil
   }
 

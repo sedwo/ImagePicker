@@ -12,14 +12,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   override init() {
     super.init()
-
-    // Enable 'XcodeColors' plugin for CocoaLumberjack  (unsigned Xcode only)
-    setenv("XcodeColors", "YES", 0);    // https://github.com/robbiehanson/XcodeColors
     setupLoggingFramework()
     DDLogInfo("")
   }
 
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     window = UIWindow()
     window?.rootViewController = controller
     window?.makeKeyAndVisible()
